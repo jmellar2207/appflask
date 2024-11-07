@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Lista de Tareas</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+   <script>
+       async function fetchTasks() {
+           const response = await fetch('/tasks');
+           const data = await response.json();
+           const tasksList = document.getElementById('tasks-list');
+           tasksList.innerHTML = '';
+
+
+           data.tasks.forEach(task => {
+               const li = document.createElement('li');
+               li.innerHTML = `<span>${task.title}</span>
+                               <button onclick="deleteTask(${task.id})">Eliminar</button>`;
+               tasksList.appendChild(li);
+           });
+       }
+
+
+       async function addTask() {
+           const taskTitle = document.getElementById('new-task').value;
+           if (taskTitle) {
+               await fetch('/tasks', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ title: taskTitle })
+               });
+               document.getElementById('new-task').value = '';
+               fetchTasks();
+           }
+       }
+
+
+       async function deleteTask(taskId) {
+           await fetch(`/tasks/${taskId}`, { method: 'DELETE' });
+           fetchTasks();
+       }
+
+
+       window.onload = fetchTasks;
+   </script>
+</head>
+<body>
+   <div class="container">
+       <h1>Lista de Tareas</h1>
+       <div class="task-input">
+           <input type="text" id="new-task" placeholder="Añadir una nueva tarea...">
+           <button onclick="addTask()">Añadir</button>
+       </div>
+       <ul id="tasks-list"></ul>
+   </div>
+</body>
+</html>
